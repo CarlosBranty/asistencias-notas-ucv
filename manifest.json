@@ -1,0 +1,26 @@
+{
+  "manifest_version": 3,
+  "name": "Asistencia Automática UCV",
+  "version": "1.0",
+  "description": "Herramienta para marcar automáticamente asistencias de estudiantes en el sistema UCV. Desarrollado con ❤️ por @branty",
+  "permissions": [
+    "activeTab",
+    "scripting",
+    "storage",
+    "tabs"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Asistencia Automática"
+  },
+  "content_scripts": [
+    {
+      "matches": ["*://*/*"],
+      "js": ["content.js"],
+      "run_at": "document_end"
+    }
+  ]
+}

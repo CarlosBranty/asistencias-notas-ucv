@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Página de Prueba - Asistencia UCV</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+        background-color: #f5f5f5;
+      }
+      .container {
+        max-width: 800px;
+        margin: 0 auto;
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+      }
+      th,
+      td {
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: left;
+      }
+      th {
+        background-color: #f2f2f2;
+      }
+      .radio-group {
+        display: flex;
+        gap: 10px;
+      }
+      .radio-group label {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>🎓 Página de Prueba - Sistema de Asistencia UCV</h1>
+      <p>
+        Esta es una página de prueba para verificar que la extensión funciona
+        correctamente.
+      </p>
+
+      <div id="DivRegistroAlumnos">
+        <table class="grid">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Código</th>
+              <th>Apellidos y Nombres</th>
+              <th>Asistencia</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>1</td>
+              <td>20230001</td>
+              <td>ALAYO SALCEDO, CRISTHIAN JESUS</td>
+              <td>
+                <div class="radio-group">
+                  <label>
+                    <input type="radio" name="rbl_asistencia0" value=",1," /> A
+                  </label>
+                  <label>
+                    <input type="radio" name="rbl_asistencia0" value=",3," /> F
+                  </label>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td>2</td>
+              <td>20230002</td>
+              <td>ALVARADO PEREZ, CIRO RIMSKY</td>
+              <td>
+                <div class="radio-group">
+                  <label>
+                    <input type="radio" name="rbl_asistencia1" value=",1," /> A
+                  </label>
+                  <label>
+                    <input type="radio" name="rbl_asistencia1" value=",3," /> F
+                  </label>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td>3</td>
+              <td>20230003</td>
+              <td>AMAYA LEON, ASTRID POEMA</td>
+              <td>
+                <div class="radio-group">
+                  <label>
+                    <input type="radio" name="rbl_asistencia2" value=",1," /> A
+                  </label>
+                  <label>
+                    <input type="radio" name="rbl_asistencia2" value=",3," /> F
+                  </label>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td>4</td>
+              <td>20230004</td>
+              <td>CHOQUE MELCHOR, PAOLO RENE</td>
+              <td>
+                <div class="radio-group">
+                  <label>
+                    <input type="radio" name="rbl_asistencia3" value=",1," /> A
+                  </label>
+                  <label>
+                    <input type="radio" name="rbl_asistencia3" value=",3," /> F
+                  </label>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td>5</td>
+              <td>20230005</td>
+              <td>SANTOS DOMINGUEZ, JESUS ALDAHIR</td>
+              <td>
+                <div class="radio-group">
+                  <label>
+                    <input type="radio" name="rbl_asistencia4" value=",1," /> A
+                  </label>
+                  <label>
+                    <input type="radio" name="rbl_asistencia4" value=",3," /> F
+                  </label>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div
+        style="
+          margin-top: 20px;
+          padding: 15px;
+          background-color: #e8f5e8;
+          border-radius: 5px;
+        "
+      >
+        <h3>📋 Instrucciones de Prueba:</h3>
+        <ol>
+          <li>Abre la extensión de Asistencia Automática UCV</li>
+          <li>Haz clic en "🧪 Probar Conexión" para verificar que funciona</li>
+          <li>
+            Haz clic en "📊 Escanear Página" para ver los estudiantes detectados
+          </li>
+          <li>
+            Ingresa algunos nombres de la lista y prueba "✅ Marcar Presentes"
+          </li>
+        </ol>
+      </div>
+    </div>
+  </body>
+</html>

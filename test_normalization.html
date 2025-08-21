@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Prueba de Normalización de Nombres</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        padding: 20px;
+        background: #f5f5f5;
+      }
+      .container {
+        max-width: 800px;
+        margin: 0 auto;
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+      .test-section {
+        margin: 20px 0;
+        padding: 15px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+      }
+      .original {
+        color: #666;
+        font-style: italic;
+      }
+      .normalized {
+        color: #4caf50;
+        font-weight: bold;
+      }
+      button {
+        background: #4caf50;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 5px;
+        cursor: pointer;
+        margin: 5px;
+      }
+      button:hover {
+        background: #45a049;
+      }
+      textarea {
+        width: 100%;
+        height: 200px;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        font-family: monospace;
+        font-size: 12px;
+      }
+      .result {
+        background: #f9f9f9;
+        padding: 10px;
+        border-radius: 5px;
+        margin-top: 10px;
+        font-family: monospace;
+        font-size: 12px;
+        white-space: pre-line;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>🧪 Prueba de Normalización de Nombres</h1>
+
+      <div class="test-section">
+        <h3>Tu lista de estudiantes:</h3>
+        <textarea
+          id="studentList"
+          placeholder="Pega aquí tu lista de estudiantes..."
+        >
+Choque Melchor, Paolo Rene
+SANTOS DOMINGUEZ, JESUS ALDAHIR
+GUERRA HERRERA , STIVEN
+SALAS ARCE, IVAN
+Arcos Rojas , Froi Daniel
+Montoya Goicochea , Luis Eduardo 
+Muñoz Solis , Angel pascual 
+PAUCAR SANTIAGO , JIMENA
+Chavez Huamani, Paulo Victor
+Lopez Asencion,  Jhonatan Christofer
+Sigarrostegui Rodriguez, Almendra Naomy
+GUEVARA TELLO , MAYKOL IVAN
+PIZARRO MALDONADO, RICARDO JONATHAN
+Arismendis Cisneros, Frances Junior
+Cruz Cordova , Ruth del carmen 
+LEANDRO VEGA, SANDRA MAYUMI
+ZAVALA PAREDES , EDITH ROSMERY 
+Chavez Flores, Andrea Estefani
+montoya goicochea, guillermo eduardo
+Maguiña Sabino , Franky Alex 
+Castillo Polo, Junior Smith
+VASQUEZ RAMIREZ, NOHELIA JAZMIN
+ggallardo quesada, cielo faviana 
+CORDOVA FLORES , JOSE MILTON 
+SALAS ARCE, IVAN
+Armero Carrasco , Irelly Leticia 
+LARA TACON , CRISTIAN
+JARAMILLO QUISPE, ANTHONY SAMUEL
+Castro Gutiérrez , Carlos Daniel 
+Jimenez Balabarca , Junior Simeon
+TREJO CORREA, CARLOS ALEXANDER
+castro vega, edward alexander 
+Agurto Adrianzén , Cesar Alfonso 
+LARA TACON , CRISTIAN
+Peña Farfan , Cristian Arturo 
+cuadros palacios, yashiro satochi
+MARIN TERRONES, MANUEL GEREMIAS 
+GUTIERREZ ALVAREZ, ROBERTO ALEXANDER
+perez peralta , miguel angel
+ROMAN GUTIEEREZ, LUIS ALEX
+Arce Sanchez, Karol Alejandro
+Segura Ramos , Jheison
+Torrejón Gonzales, Diego Alonso
+Villegas Fernandez, Alexander Josue 
+LIVIA GIRON, MANUEL JESUS
+chavez rodriguez, jean pabell
+LEANDRO VEGA, SANDRA MAYUMI
+PEÑA LLACSAHUANGA , LUIS MARIO 
+Gastelo Cabrera , Brandon Alejandro 
+LEANDRO VEGA, SANDRA MAYUMI
+Espinal Hernandez, Jorge Luis 
+Vásquez Morales, Alexander Estanislao
+LEANDRO VEGA, SANDRA MAYUMI
+LEANDRO VEGA, SANDRA MAYUMI
+HUAYAPA MUÑOZ , LIZBETH GUIANNINA</textarea
+        >
+      </div>
+
+      <button onclick="testNormalization()">🧪 Probar Normalización</button>
+      <button onclick="clearResults()">🗑️ Limpiar Resultados</button>
+
+      <div id="results" class="result" style="display: none"></div>
+    </div>
+
+    <script>
+      // Función de normalización idéntica a la de la extensión
+      function normalizeName(name) {
+        return name
+          .trim()
+          .toUpperCase()
+          .replace(/\s+/g, " ") // Reemplazar múltiples espacios con uno solo
+          .replace(/\s*,\s*/g, ", ") // Normalizar espacios alrededor de comas
+          .replace(/\s+/g, " "); // Limpiar espacios extra nuevamente
+      }
+
+      function testNormalization() {
+        const studentList = document.getElementById("studentList").value;
+        const lines = studentList
+          .split("\n")
+          .filter((line) => line.trim() !== "");
+
+        let results = "📋 RESULTADOS DE NORMALIZACIÓN:\n\n";
+
+        lines.forEach((line, index) => {
+          const original = line.trim();
+          const normalized = normalizeName(original);
+
+          results += `${index + 1}. Original: "${original}"\n`;
+          results += `   Normalizado: "${normalized}"\n`;
+          results += `   ${
+            original === normalized ? "✅ Sin cambios" : "🔄 Cambios aplicados"
+          }\n\n`;
+        });
+
+        // Mostrar estadísticas
+        const uniqueNormalized = [
+          ...new Set(lines.map((line) => normalizeName(line.trim()))),
+        ];
+        results += `📊 ESTADÍSTICAS:\n`;
+        results += `• Total de líneas: ${lines.length}\n`;
+        results += `• Nombres únicos después de normalización: ${uniqueNormalized.length}\n`;
+        results += `• Duplicados eliminados: ${
+          lines.length - uniqueNormalized.length
+        }\n\n`;
+
+        // Mostrar duplicados
+        const duplicates = findDuplicates(
+          lines.map((line) => normalizeName(line.trim()))
+        );
+        if (duplicates.length > 0) {
+          results += `⚠️ POSIBLES DUPLICADOS:\n`;
+          duplicates.forEach((dup) => {
+            results += `• "${dup}"\n`;
+          });
+        }
+
+        document.getElementById("results").textContent = results;
+        document.getElementById("results").style.display = "block";
+      }
+
+      function findDuplicates(array) {
+        const counts = {};
+        const duplicates = [];
+
+        array.forEach((item) => {
+          counts[item] = (counts[item] || 0) + 1;
+        });
+
+        Object.keys(counts).forEach((item) => {
+          if (counts[item] > 1) {
+            duplicates.push(item);
+          }
+        });
+
+        return duplicates;
+      }
+
+      function clearResults() {
+        document.getElementById("results").style.display = "none";
+      }
+    </script>
+  </body>
+</html>

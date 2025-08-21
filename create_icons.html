@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Generador de Iconos - Extensión UCV</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        padding: 20px;
+        background: #f5f5f5;
+      }
+      .container {
+        max-width: 800px;
+        margin: 0 auto;
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+      .icon-container {
+        display: flex;
+        gap: 20px;
+        margin: 20px 0;
+        flex-wrap: wrap;
+      }
+      .icon {
+        text-align: center;
+      }
+      canvas {
+        border: 1px solid #ddd;
+        border-radius: 5px;
+      }
+      button {
+        background: #4caf50;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 5px;
+        cursor: pointer;
+        margin: 5px;
+      }
+      button:hover {
+        background: #45a049;
+      }
+      .instructions {
+        background: #e7f3ff;
+        padding: 15px;
+        border-radius: 5px;
+        margin-bottom: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>🎓 Generador de Iconos para Extensión UCV</h1>
+
+      <div class="instructions">
+        <h3>Instrucciones:</h3>
+        <ol>
+          <li>
+            Haz clic en "Generar Iconos" para crear los iconos de la extensión
+          </li>
+          <li>
+            Haz clic derecho en cada icono y selecciona "Guardar imagen como..."
+          </li>
+          <li>
+            Guarda los archivos como:
+            <ul>
+              <li><code>icon16.png</code> (16x16 píxeles)</li>
+              <li><code>icon48.png</code> (48x48 píxeles)</li>
+              <li><code>icon128.png</code> (128x128 píxeles)</li>
+            </ul>
+          </li>
+          <li>
+            Coloca los archivos en la misma carpeta que el
+            <code>manifest.json</code>
+          </li>
+        </ol>
+      </div>
+
+      <button onclick="generateIcons()">🎨 Generar Iconos</button>
+      <button onclick="downloadAll()">📥 Descargar Todos</button>
+
+      <div class="icon-container" id="iconContainer">
+        <!-- Los iconos se generarán aquí -->
+      </div>
+    </div>
+
+    <script>
+      function generateIcon(size) {
+        const canvas = document.createElement("canvas");
+        canvas.width = size;
+        canvas.height = size;
+        const ctx = canvas.getContext("2d");
+
+        // Fondo degradado
+        const gradient = ctx.createLinearGradient(0, 0, size, size);
+        gradient.addColorStop(0, "#667eea");
+        gradient.addColorStop(1, "#764ba2");
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, size, size);
+
+        // Círculo central
+        const centerX = size / 2;
+        const centerY = size / 2;
+        const radius = size * 0.35;
+
+        ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+        ctx.fill();
+
+        // Símbolo de graduación
+        ctx.fillStyle = "#4CAF50";
+        ctx.font = `bold ${size * 0.4}px Arial`;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText("🎓", centerX, centerY);
+
+        // Borde
+        ctx.strokeStyle = "rgba(255, 255, 255, 0.8)";
+        ctx.lineWidth = size * 0.02;
+        ctx.strokeRect(0, 0, size, size);
+
+        return canvas;
+      }
+
+      function generateIcons() {
+        const container = document.getElementById("iconContainer");
+        container.innerHTML = "";
+
+        const sizes = [16, 48, 128];
+
+        sizes.forEach((size) => {
+          const iconDiv = document.createElement("div");
+          iconDiv.className = "icon";
+
+          const canvas = generateIcon(size);
+          canvas.id = `icon${size}`;
+
+          const label = document.createElement("p");
+          label.textContent = `${size}x${size} píxeles`;
+
+          iconDiv.appendChild(canvas);
+          iconDiv.appendChild(label);
+          container.appendChild(iconDiv);
+        });
+      }
+
+      function downloadCanvas(canvas, filename) {
+        const link = document.createElement("a");
+        link.download = filename;
+        link.href = canvas.toDataURL("image/png");
+        link.click();
+      }
+
+      function downloadAll() {
+        const sizes = [16, 48, 128];
+        sizes.forEach((size) => {
+          const canvas = document.getElementById(`icon${size}`);
+          if (canvas) {
+            downloadCanvas(canvas, `icon${size}.png`);
+          }
+        });
+      }
+
+      // Generar iconos al cargar la página
+      window.onload = generateIcons;
+    </script>
+  </body>
+</html>
