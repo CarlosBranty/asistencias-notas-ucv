@@ -1,0 +1,40 @@
+// Background script para la extensión de Asistencia Automática UCV (Firefox)
+console.log("🎓 Background script iniciado (Firefox)");
+
+// Escuchar cuando se instala la extensión
+browser.runtime.onInstalled.addListener(() => {
+  console.log("🎓 Extensión instalada/actualizada");
+});
+
+// Escuchar cuando se hace clic en el icono de la extensión
+browser.browserAction.onClicked.addListener((tab) => {
+  console.log("🎓 Icono de extensión clickeado en:", tab.url);
+});
+
+// Función para inyectar el content script manualmente si es necesario
+async function injectContentScript(tabId) {
+  try {
+    await browser.tabs.executeScript(tabId, {
+      file: "content.js",
+    });
+    console.log("✅ Content script inyectado manualmente en tab:", tabId);
+  } catch (error) {
+    console.error("❌ Error inyectando content script:", error);
+  }
+}
+
+// Escuchar mensajes del popup
+browser.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  console.log("📨 Background recibió mensaje:", request);
+
+  if (request.action === "injectContentScript") {
+    injectContentScript(request.tabId)
+      .then(() => {
+        sendResponse({ success: true });
+      })
+      .catch((error) => {
+        sendResponse({ success: false, error: error.message });
+      });
+    return true; // Mantener el canal abierto
+  }
+});
