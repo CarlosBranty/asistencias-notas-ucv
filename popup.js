@@ -13,6 +13,22 @@ document.addEventListener("DOMContentLoaded", function () {
   const settingsBtn = document.getElementById("settingsBtn");
   const closeBtn = document.getElementById("closeBtn");
 
+  // Elementos de tabs
+  const tabAsistencias = document.getElementById("tabAsistencias");
+  const tabNotas = document.getElementById("tabNotas");
+  const asistenciasTab = document.getElementById("asistenciasTab");
+  const notasTab = document.getElementById("notasTab");
+
+  // Elementos de notas
+  const scanNotasBtn = document.getElementById("scanNotasBtn");
+  const fillNotesBtn = document.getElementById("fillNotesBtn");
+  const clearNotesBtn = document.getElementById("clearNotesBtn");
+  const notesListTextarea = document.getElementById("notesList");
+  const columnSelector = document.getElementById("columnSelector");
+  const notesStatus = document.getElementById("notesStatus");
+  const statsNotasText = document.getElementById("statsNotasText");
+  const statsNotasPercentage = document.getElementById("statsNotasPercentage");
+
   // Elementos funcionales
   const studentListTextarea = document.getElementById("studentList");
   const statusDiv = document.getElementById("status");
@@ -26,6 +42,9 @@ document.addEventListener("DOMContentLoaded", function () {
   // Estado de la interfaz
   let isToolsExpanded = false;
   let currentStats = { total: 0, marked: 0 };
+  let currentNotasStats = { total: 0, filled: 0 };
+  let availableColumns = [];
+  let selectedColumn = "";
 
   // Función para alternar las herramientas avanzadas
   function toggleTools() {
@@ -88,6 +107,171 @@ document.addEventListener("DOMContentLoaded", function () {
   function clearLogs() {
     logsContainer.innerHTML = "";
     addLog("🗑️ Logs limpiados", "info");
+  }
+
+  // Función para cambiar entre tabs
+  function switchTab(tabName) {
+    // Remover clase active de todos los tabs
+    tabAsistencias.classList.remove("active");
+    tabNotas.classList.remove("active");
+    asistenciasTab.classList.remove("active");
+    notasTab.classList.remove("active");
+
+    // Agregar clase active al tab seleccionado
+    if (tabName === "asistencias") {
+      tabAsistencias.classList.add("active");
+      asistenciasTab.classList.add("active");
+      addLog("📋 Cambiado a tab de Asistencias", "info");
+    } else if (tabName === "notas") {
+      tabNotas.classList.add("active");
+      notasTab.classList.add("active");
+      addLog("📊 Cambiado a tab de Notas", "info");
+    }
+  }
+
+  // Función para actualizar estadísticas de notas
+  function updateNotasStats(total = 0, filled = 0) {
+    currentNotasStats = { total, filled };
+    const percentage = total > 0 ? Math.round((filled / total) * 100) : 0;
+
+    statsNotasText.textContent = `${filled}/${total}`;
+    statsNotasPercentage.textContent = `${percentage}%`;
+  }
+
+  // Función para escanear columnas de notas
+  function scanNotasColumns() {
+    addLog("🔍 Escaneando columnas de notas...", "info");
+    notesStatus.textContent = "Estado: Escaneando página...";
+
+    chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+      chrome.tabs.sendMessage(
+        tabs[0].id,
+        { action: "scanNotasColumns" },
+        function (response) {
+          if (chrome.runtime.lastError) {
+            addLog(
+              "❌ Error al escanear columnas: " +
+                chrome.runtime.lastError.message,
+              "error"
+            );
+            notesStatus.textContent = "Estado: Error al escanear página";
+            return;
+          }
+
+          if (response && response.success) {
+            availableColumns = response.columns || [];
+            selectedColumn = "";
+
+            // Actualizar selector de columnas
+            columnSelector.innerHTML =
+              '<option value="">Selecciona una columna de notas</option>';
+            availableColumns.forEach((column) => {
+              const option = document.createElement("option");
+              option.value = column;
+              option.textContent = column;
+              columnSelector.appendChild(option);
+            });
+
+            columnSelector.style.display =
+              availableColumns.length > 0 ? "block" : "none";
+            notesStatus.textContent = `Estado: ${availableColumns.length} columnas detectadas`;
+            updateNotasStats(response.totalStudents || 0, 0);
+
+            addLog(
+              `✅ ${
+                availableColumns.length
+              } columnas detectadas: ${availableColumns.join(", ")}`,
+              "success"
+            );
+          } else {
+            addLog("❌ No se pudieron detectar columnas de notas", "error");
+            notesStatus.textContent = "Estado: No se detectaron columnas";
+          }
+        }
+      );
+    });
+  }
+
+  // Función para llenar notas
+  function fillNotes() {
+    if (!selectedColumn) {
+      addLog("❌ Por favor selecciona una columna de notas", "error");
+      return;
+    }
+
+    const notesText = notesListTextarea.value.trim();
+    if (!notesText) {
+      addLog("❌ Por favor ingresa las notas", "error");
+      return;
+    }
+
+    addLog("📝 Llenando notas...", "info");
+    notesStatus.textContent = "Estado: Llenando notas...";
+
+    // Parsear las notas
+    const notesData = [];
+    const lines = notesText.split("\n");
+
+    for (const line of lines) {
+      const trimmedLine = line.trim();
+      if (trimmedLine) {
+        const match = trimmedLine.match(/^(.+?):\s*(\d+(?:\.\d+)?)$/);
+        if (match) {
+          notesData.push({
+            name: match[1].trim(),
+            note: parseFloat(match[2]),
+          });
+        } else {
+          addLog(`⚠️ Formato incorrecto en línea: "${trimmedLine}"`, "error");
+        }
+      }
+    }
+
+    if (notesData.length === 0) {
+      addLog("❌ No se encontraron notas válidas", "error");
+      notesStatus.textContent = "Estado: No se encontraron notas válidas";
+      return;
+    }
+
+    chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+      chrome.tabs.sendMessage(
+        tabs[0].id,
+        {
+          action: "fillNotes",
+          column: selectedColumn,
+          notes: notesData,
+        },
+        function (response) {
+          if (chrome.runtime.lastError) {
+            addLog(
+              "❌ Error al llenar notas: " + chrome.runtime.lastError.message,
+              "error"
+            );
+            notesStatus.textContent = "Estado: Error al llenar notas";
+            return;
+          }
+
+          if (response && response.success) {
+            const filledCount = response.filledCount || 0;
+            const totalCount = response.totalCount || 0;
+
+            updateNotasStats(totalCount, filledCount);
+            notesStatus.textContent = `Estado: ${filledCount} notas llenadas de ${totalCount} estudiantes`;
+
+            addLog(`✅ ${filledCount} notas llenadas exitosamente`, "success");
+          } else {
+            addLog("❌ Error al llenar las notas", "error");
+            notesStatus.textContent = "Estado: Error al llenar notas";
+          }
+        }
+      );
+    });
+  }
+
+  // Función para limpiar notas
+  function clearNotes() {
+    notesListTextarea.value = "";
+    addLog("🗑️ Lista de notas limpiada", "info");
   }
 
   // Función para mostrar mensajes de estado
@@ -301,6 +485,23 @@ document.addEventListener("DOMContentLoaded", function () {
   scanBtn.addEventListener("click", scanPage);
   markPresentBtn.addEventListener("click", markStudentsPresent);
   clearAllBtn.addEventListener("click", markAllStudentsAbsent);
+
+  // Event listeners para tabs
+  tabAsistencias.addEventListener("click", () => switchTab("asistencias"));
+  tabNotas.addEventListener("click", () => switchTab("notas"));
+
+  // Event listeners para notas
+  scanNotasBtn.addEventListener("click", scanNotasColumns);
+  fillNotesBtn.addEventListener("click", fillNotes);
+  clearNotesBtn.addEventListener("click", clearNotes);
+
+  // Event listener para selector de columnas
+  columnSelector.addEventListener("change", function () {
+    selectedColumn = this.value;
+    if (selectedColumn) {
+      addLog(`📊 Columna seleccionada: ${selectedColumn}`, "info");
+    }
+  });
 
   // Función para depurar la página
   debugBtn.addEventListener("click", async function () {

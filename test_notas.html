@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Prueba de Funcionalidad de Notas - UCV</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+        background-color: #f5f5f5;
+      }
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 20px 0;
+      }
+      th,
+      td {
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: left;
+      }
+      th {
+        background-color: #f2f2f2;
+        font-weight: bold;
+      }
+      input[type="text"],
+      input[type="number"] {
+        width: 60px;
+        padding: 4px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+      }
+      .status {
+        padding: 10px;
+        margin: 10px 0;
+        border-radius: 4px;
+        background-color: #e7f3ff;
+        border: 1px solid #b3d9ff;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>🎓 Prueba de Funcionalidad de Notas - Sistema UCV</h1>
+      <p>
+        Esta página simula la estructura de una página de notas del sistema UCV
+        para probar la funcionalidad de llenado masivo de notas.
+      </p>
+
+      <div class="status">
+        <strong>Instrucciones:</strong>
+        <ol>
+          <li>Abre la extensión de Asistencias y Notas UCV</li>
+          <li>Ve al tab de "Notas"</li>
+          <li>Haz clic en "Escanear" para detectar las columnas</li>
+          <li>Selecciona una columna (PA1, PA2, EP, EF)</li>
+          <li>Ingresa las notas en el formato: "APELLIDO, NOMBRE: NOTA"</li>
+          <li>Haz clic en "Llenar Notas"</li>
+        </ol>
+      </div>
+
+      <h2>📊 Tabla de Notas de Estudiantes</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>N°</th>
+            <th>Apellidos y Nombres</th>
+            <th>Código</th>
+            <th>PA1</th>
+            <th>EP</th>
+            <th>PA2</th>
+            <th>EF</th>
+            <th>PA3</th>
+            <th>.P</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>1</td>
+            <td>ALAYO SALCEDO, CRISTHIAN JESUS</td>
+            <td>7002337465</td>
+            <td><input type="number" min="0" max="20" step="0.1" /></td>
+            <td><input type="number" min="0" max="20" step="0.1" /></td>
+            <td><input type="number" min="0" max="20" step="0.1" /></td>
+            <td><input type="number" min="0" max="20" step="0.1" /></td>
+            <td><input type="number" min="0" max="20" step="0.1" /></td>
+            <td>
+              <input type="number" min="0" max="20" step="0.1" readonly />
+            </td>
+          </tr>
+          <tr>
+            <td>2</td>
+            <td>ALVARADO PEREZ, CIRO RIMSKY</td>
+            <td>7002337466</td>
+            <td><input type="number" min="0" max="20" step="0.1" /></td>
+            <td><input type="number" min="0" max="20" step="0.1" /></td>
+            <td><input type="number" min="0" max="20" step="0.1" /></td>
+            <td><input type="number" min="0" max="20" step="0.1" /></td>
+            <td><input type="number" min="0" max="20" step="0.1" /></td>
+            <td>
+              <input type="number" min="0" max="20" step="0.1" readonly />
+            </td>
+          </tr>
+          <tr>
+            <td>3</td>
+            <td>AMAYA LEON, ASTRID POEMA</td>
+            <td>7002337467</td>
+            <td><input type="number" min="0" max="20" step="0.1" /></td>
+            <td><input type="number" min="0" max="20" step="0.1" /></td>
+            <td><input type="number" min="0" max="20" step="0.1" /></td>
+            <td><input type="number" min="0" max="20" step="0.1" /></td>
+            <td><input type="number" min="0" max="20" step="0.1" /></td>
+            <td>
+              <input type="number" min="0" max="20" step="0.1" readonly />
+            </td>
+          </tr>
+          <tr>
+            <td>4</td>
+            <td>BARRETO VASQUEZ, MARIA FERNANDA</td>
+            <td>7002337468</td>
+            <td><input type="number" min="0" max="20" step="0.1" /></td>
+            <td><input type="number" min="0" max="20" step="0.1" /></td>
+            <td><input type="number" min="0" max="20" step="0.1" /></td>
+            <td><input type="number" min="0" max="20" step="0.1" /></td>
+            <td><input type="number" min="0" max="20" step="0.1" /></td>
+            <td>
+              <input type="number" min="0" max="20" step="0.1" readonly />
+            </td>
+          </tr>
+          <tr>
+            <td>5</td>
+            <td>CASTILLO RODRIGUEZ, JUAN CARLOS</td>
+            <td>7002337469</td>
+            <td><input type="number" min="0" max="20" step="0.1" /></td>
+            <td><input type="number" min="0" max="20" step="0.1" /></td>
+            <td><input type="number" min="0" max="20" step="0.1" /></td>
+            <td><input type="number" min="0" max="20" step="0.1" /></td>
+            <td><input type="number" min="0" max="20" step="0.1" /></td>
+            <td>
+              <input type="number" min="0" max="20" step="0.1" readonly />
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="status">
+        <strong>Ejemplo de datos para probar:</strong><br />
+        ALAYO SALCEDO, CRISTHIAN JESUS: 18<br />
+        ALVARADO PEREZ, CIRO RIMSKY: 16<br />
+        AMAYA LEON, ASTRID POEMA: 17<br />
+        BARRETO VASQUEZ, MARIA FERNANDA: 19<br />
+        CASTILLO RODRIGUEZ, JUAN CARLOS: 15
+      </div>
+
+      <h3>🔧 Funcionalidades Implementadas:</h3>
+      <ul>
+        <li>✅ Sistema de tabs para separar asistencias y notas</li>
+        <li>
+          ✅ Escaneo automático de columnas de notas (PA1, PA2, PA3, EP, EF,
+          etc.)
+        </li>
+        <li>✅ Selector de columna para elegir cuál llenar</li>
+        <li>✅ Llenado masivo de notas por nombre de estudiante</li>
+        <li>✅ Normalización de nombres para mejor coincidencia</li>
+        <li>✅ Estadísticas de notas llenadas</li>
+        <li>✅ Logs detallados del proceso</li>
+        <li>✅ Manejo de errores y validaciones</li>
+      </ul>
+
+      <h3>📋 Proceso de Uso:</h3>
+      <ol>
+        <li>
+          <strong>Escanear:</strong> Detecta automáticamente las columnas de
+          notas disponibles
+        </li>
+        <li>
+          <strong>Seleccionar:</strong> Elige la columna donde quieres llenar
+          las notas
+        </li>
+        <li>
+          <strong>Ingresar:</strong> Escribe las notas en formato "NOMBRE: NOTA"
+        </li>
+        <li><strong>Llenar:</strong> Ejecuta el llenado masivo de notas</li>
+        <li>
+          <strong>Verificar:</strong> Revisa los logs para confirmar el proceso
+        </li>
+      </ol>
+    </div>
+  </body>
+</html>

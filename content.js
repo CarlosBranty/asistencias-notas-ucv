@@ -662,6 +662,20 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       success: true,
       report: report,
     });
+  } else if (request.action === "scanNotasColumns") {
+    sendLogToPopup("📊 Escaneando columnas de notas...", "info");
+    console.log("📊 Escaneando columnas de notas...");
+
+    const result = scanNotasColumns();
+    console.log("📊 Resultado del escaneo de notas:", result);
+    sendResponse(result);
+  } else if (request.action === "fillNotes") {
+    sendLogToPopup("📝 Llenando notas...", "info");
+    console.log("📝 Llenando notas...");
+
+    const result = fillNotes(request.column, request.notes);
+    console.log("📊 Resultado del llenado de notas:", result);
+    sendResponse(result);
   }
 
   return true; // Mantener el canal de comunicación abierto
@@ -853,3 +867,357 @@ function generateCompleteReport() {
 // Verificar que el content script se cargó correctamente
 console.log("🎓 Content script cargado en:", window.location.href);
 console.log("🎓 Document ready state:", document.readyState);
+
+// ========================================
+// FUNCIONES PARA MANEJO DE NOTAS
+// ========================================
+
+// Función para escanear columnas de notas disponibles
+function scanNotasColumns() {
+  const logMessage =
+    "🔍 ESCANEO DE NOTAS: Analizando estructura de la página...";
+  console.log(logMessage);
+  sendLogToPopup(logMessage, "info");
+
+  const scanResult = {
+    success: false,
+    isNotesPage: false,
+    columns: [],
+    totalStudents: 0,
+    students: [],
+    pageInfo: {
+      url: window.location.href,
+      title: document.title,
+      hasTables: false,
+      tableCount: 0,
+    },
+  };
+
+  // 1. Verificar si es una página de notas
+  sendLogToPopup("🔍 Paso 1: Verificando si es página de notas...", "info");
+
+  const allTables = document.querySelectorAll("table");
+  const noteInputs = document.querySelectorAll(
+    'input[type="text"][name*="PA"], input[type="text"][name*="EP"], input[type="text"][name*="EF"], input[type="text"][name*="EX"]'
+  );
+  const notasTable = document.getElementById("TBL_RegistroNotas");
+
+  scanResult.pageInfo.tableCount = allTables.length;
+  scanResult.pageInfo.hasTables = allTables.length > 0;
+
+  sendLogToPopup(
+    `📊 Encontrados: ${allTables.length} tablas, ${noteInputs.length} inputs de notas`,
+    "info"
+  );
+
+  // 2. Buscar la tabla de notas específica
+  sendLogToPopup("🔍 Paso 2: Buscando tabla de notas...", "info");
+
+  let targetTable = null;
+  let tableType = "";
+
+  // Primero buscar la tabla específica TBL_RegistroNotas
+  if (notasTable) {
+    targetTable = notasTable;
+    tableType = "TBL_RegistroNotas";
+    sendLogToPopup("✅ Encontrada tabla TBL_RegistroNotas", "success");
+  } else {
+    // Buscar cualquier tabla que contenga inputs de notas
+    for (const table of allTables) {
+      const inputs = table.querySelectorAll(
+        'input[type="text"][name*="PA"], input[type="text"][name*="EP"], input[type="text"][name*="EF"], input[type="text"][name*="EX"]'
+      );
+      if (inputs.length > 0) {
+        targetTable = table;
+        tableType = "Tabla con inputs de notas";
+        sendLogToPopup(
+          `✅ Encontrada tabla con ${inputs.length} inputs de notas`,
+          "success"
+        );
+        break;
+      }
+    }
+  }
+
+  if (!targetTable) {
+    sendLogToPopup("❌ No se encontró tabla de notas en la página", "error");
+    return scanResult;
+  }
+
+  // 3. Extraer encabezados de la tabla
+  sendLogToPopup("🔍 Paso 3: Extrayendo encabezados de la tabla...", "info");
+
+  const thead = targetTable.querySelector("thead");
+  let headers = [];
+
+  if (thead) {
+    const headerRow = thead.querySelector("tr");
+    if (headerRow) {
+      const headerCells = headerRow.querySelectorAll("th");
+      headers = Array.from(headerCells).map((th) => th.textContent.trim());
+      sendLogToPopup(
+        `✅ Encontrados ${headers.length} encabezados en thead`,
+        "success"
+      );
+    }
+  } else {
+    // Si no hay thead, buscar en la primera fila
+    const firstRow = targetTable.querySelector("tr");
+    if (firstRow) {
+      const headerCells = firstRow.querySelectorAll("th, td");
+      headers = Array.from(headerCells).map((cell) => cell.textContent.trim());
+      sendLogToPopup(
+        `✅ Encontrados ${headers.length} encabezados en primera fila`,
+        "success"
+      );
+    }
+  }
+
+  if (headers.length === 0) {
+    sendLogToPopup(
+      "❌ No se pudieron extraer encabezados de la tabla",
+      "error"
+    );
+    return scanResult;
+  }
+
+  console.log("📊 Todos los encabezados encontrados:", headers);
+
+  // 4. Filtrar columnas de notas
+  sendLogToPopup("🔍 Paso 4: Filtrando columnas de notas...", "info");
+
+  const notasPatterns = ["PA1", "PA2", "PA3", "PA4", "EP", "EF", "EX"];
+  const columnHeaders = headers.filter((header) =>
+    notasPatterns.some((pattern) => header.includes(pattern))
+  );
+
+  if (columnHeaders.length === 0) {
+    sendLogToPopup("❌ No se encontraron columnas de notas válidas", "error");
+    return scanResult;
+  }
+
+  sendLogToPopup(
+    `✅ Encontradas ${
+      columnHeaders.length
+    } columnas de notas: ${columnHeaders.join(", ")}`,
+    "success"
+  );
+
+  // 5. Extraer información de estudiantes
+  sendLogToPopup("🔍 Paso 5: Extrayendo información de estudiantes...", "info");
+
+  const tbody = targetTable.querySelector("tbody");
+  let studentRows = [];
+
+  if (tbody) {
+    studentRows = tbody.querySelectorAll("tr");
+  } else {
+    // Si no hay tbody, usar todas las filas excepto la primera (encabezados)
+    const allRows = targetTable.querySelectorAll("tr");
+    studentRows = Array.from(allRows).slice(1);
+  }
+
+  scanResult.totalStudents = studentRows.length;
+
+  // Extraer información de cada estudiante
+  studentRows.forEach((row, index) => {
+    const cells = row.querySelectorAll("td");
+    let studentName = "";
+    let studentCode = "";
+
+    // Buscar nombre en las celdas (generalmente en las primeras columnas)
+    for (let i = 0; i < Math.min(4, cells.length); i++) {
+      const cellText = cells[i].textContent.trim();
+      if (cellText && cellText.length > 5 && !studentName) {
+        // Limpiar el nombre de elementos HTML
+        const cleanName = cellText.replace(/<img[^>]*>/g, "").trim();
+        if (cleanName.length > 3) {
+          studentName = normalizeName(cleanName);
+          break;
+        }
+      }
+    }
+
+    // Buscar código de estudiante (números)
+    for (let i = 0; i < cells.length; i++) {
+      const cellText = cells[i].textContent.trim();
+      if (
+        cellText &&
+        /^\d+$/.test(cellText) &&
+        cellText.length >= 6 &&
+        !studentCode
+      ) {
+        studentCode = cellText;
+        break;
+      }
+    }
+
+    if (studentName) {
+      scanResult.students.push({
+        name: studentName,
+        code: studentCode,
+        row: row,
+        index: index,
+      });
+
+      sendLogToPopup(`✅ Estudiante ${index + 1}: "${studentName}"`, "success");
+    }
+  });
+
+  // 6. Determinar si es página de notas
+  scanResult.isNotesPage =
+    scanResult.students.length > 0 && columnHeaders.length > 0;
+  scanResult.success = scanResult.isNotesPage;
+  scanResult.columns = columnHeaders;
+
+  const finalMessage = `📊 ESCANEO COMPLETADO: ${scanResult.students.length} estudiantes, ${columnHeaders.length} columnas de notas`;
+  sendLogToPopup(finalMessage, scanResult.isNotesPage ? "success" : "error");
+
+  return scanResult;
+}
+
+// Función para llenar notas en la columna seleccionada
+function fillNotes(columnName, notesData) {
+  console.log("📝 Iniciando llenado de notas...");
+  console.log("📊 Columna:", columnName);
+  console.log("📊 Datos de notas:", notesData);
+
+  sendLogToPopup("📝 Llenando notas...", "info");
+
+  const result = {
+    success: false,
+    filledCount: 0,
+    totalCount: 0,
+    errors: [],
+    message: "",
+  };
+
+  try {
+    // Buscar específicamente la tabla TBL_RegistroNotas
+    const notasTable = document.getElementById("TBL_RegistroNotas");
+
+    if (!notasTable) {
+      result.message = "No se encontró la tabla TBL_RegistroNotas";
+      sendLogToPopup("❌ No se encontró la tabla TBL_RegistroNotas", "error");
+      return result;
+    }
+
+    // Buscar la columna específica en los encabezados
+    const thead = notasTable.querySelector("thead");
+    const headerRow = thead.querySelector("tr");
+    const headerCells = headerRow.querySelectorAll("th");
+
+    let columnIndex = -1;
+    for (let i = 0; i < headerCells.length; i++) {
+      const headerText = headerCells[i].textContent.trim();
+      if (headerText.includes(columnName)) {
+        columnIndex = i;
+        break;
+      }
+    }
+
+    if (columnIndex === -1) {
+      result.message = `No se encontró la columna '${columnName}'`;
+      sendLogToPopup(`❌ No se encontró la columna '${columnName}'`, "error");
+      return result;
+    }
+
+    console.log(
+      `✅ Columna '${columnName}' encontrada en índice ${columnIndex}`
+    );
+
+    // Obtener todas las filas de estudiantes del tbody
+    const tbody = notasTable.querySelector("tbody");
+    if (!tbody) {
+      result.message = "No se encontró el tbody de la tabla";
+      sendLogToPopup("❌ No se encontró el tbody de la tabla", "error");
+      return result;
+    }
+
+    const studentRows = tbody.querySelectorAll("tr");
+    result.totalCount = studentRows.length;
+
+    console.log(`📊 Total de estudiantes: ${result.totalCount}`);
+
+    // Procesar cada nota
+    for (const noteData of notesData) {
+      const normalizedName = normalizeName(noteData.name);
+      let found = false;
+
+      // Buscar el estudiante en las filas
+      for (let i = 0; i < studentRows.length; i++) {
+        const row = studentRows[i];
+        const cells = row.querySelectorAll("td");
+
+        if (cells.length > columnIndex) {
+          // El nombre del estudiante está en la columna 3 (índice 3)
+          const nameCell = cells[3]; // Columna "Nombre"
+          const studentName = nameCell.textContent.trim();
+
+          // Limpiar el nombre (remover la imagen y otros elementos)
+          const cleanStudentName = studentName
+            .replace(/<img[^>]*>/g, "")
+            .trim();
+
+          const normalizedStudentName = normalizeName(cleanStudentName);
+
+          console.log(
+            `🔍 Comparando: "${normalizedName}" con "${normalizedStudentName}"`
+          );
+
+          // Comparar nombres
+          if (
+            normalizedStudentName.includes(normalizedName) ||
+            normalizedName.includes(normalizedStudentName)
+          ) {
+            // Encontrar el input para la nota en la columna correspondiente
+            const noteCell = cells[columnIndex];
+            const noteInput = noteCell.querySelector("input[type='text']");
+
+            if (noteInput) {
+              noteInput.value = noteData.note;
+              noteInput.dispatchEvent(new Event("input", { bubbles: true }));
+              noteInput.dispatchEvent(new Event("change", { bubbles: true }));
+
+              result.filledCount++;
+              found = true;
+              console.log(
+                `✅ Nota llenada para ${noteData.name}: ${noteData.note}`
+              );
+              sendLogToPopup(
+                `✅ ${noteData.name}: ${noteData.note}`,
+                "success"
+              );
+              break;
+            } else {
+              result.errors.push(`No se encontró input para ${noteData.name}`);
+              console.log(
+                `❌ No se encontró input en la celda para ${noteData.name}`
+              );
+            }
+          }
+        }
+      }
+
+      if (!found) {
+        result.errors.push(`Estudiante no encontrado: ${noteData.name}`);
+        sendLogToPopup(`❌ No encontrado: ${noteData.name}`, "error");
+      }
+    }
+
+    result.success = true;
+    result.message = `${result.filledCount} notas llenadas de ${result.totalCount} estudiantes`;
+
+    console.log("📊 Resultado del llenado:", result);
+    sendLogToPopup(
+      `✅ ${result.filledCount} notas llenadas exitosamente`,
+      "success"
+    );
+  } catch (error) {
+    console.error("❌ Error llenando notas:", error);
+    result.message = "Error al llenar notas: " + error.message;
+    sendLogToPopup("❌ Error al llenar notas", "error");
+  }
+
+  return result;
+}
